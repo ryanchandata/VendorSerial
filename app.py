@@ -4,6 +4,7 @@ import os
 import datetime
 import barcode
 from barcode.writer import ImageWriter
+from barcode import get_barcode_class
 from io import BytesIO
 import base64
 
@@ -11,6 +12,7 @@ import base64
 app = Flask(__name__)
 
 def generate_barcode(serial_no):
+    print(f"Generating barcode for serial number: {serial_no}")  # Log the serial number
     try:
         CODE128 = barcode.get_barcode_class('code128')
         barcode_instance = CODE128(serial_no, writer=ImageWriter())
@@ -18,7 +20,7 @@ def generate_barcode(serial_no):
         # Adjusting options
         options = {
             'write_text': False,  # Ensure the text is not written
-            'text_distance': 3,   # Distance between barcode and (non-existent) text
+            'text_distance': 3,   # Distance between barcode and text
             'quiet_zone': 1,      # Margins around the barcode
         }
 
@@ -28,8 +30,10 @@ def generate_barcode(serial_no):
         return f"data:image/png;base64,{barcode_data}"
 
     except Exception as e:
-        print(f"Error generating barcode: {e}")
+        print(f"Error generating barcode for {serial_no}: {e}")  # Log any errors
         return None
+
+
 
 def read_today_records():
     with open('db.csv', mode='r') as file:
@@ -182,6 +186,6 @@ if __name__ == "__main__":
     if env == 'production':
         port = int(os.environ.get('PORT', 80))  # Use PORT environment variable in production, default to 80
     else:
-        port = 5555  # Use 5000 for local development
+        port = 5888  # Use 5000 for local development
 
     app.run(host='0.0.0.0', port=port)
