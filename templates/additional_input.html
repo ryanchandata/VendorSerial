@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Additional Details</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Auto-focus on the Total Skids input field
+            document.getElementById('totalSkids').focus();
+
+            // Function to handle the Enter keypress
+            function handleEnterKeyPress(event, nextFieldId) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();  // Prevent the default form submit on Enter key
+                    document.getElementById(nextFieldId).focus();
+                }
+            }
+
+            // Monitor Enter keypress on Total Skids
+            document.getElementById('totalSkids').addEventListener('keydown', (event) => {
+                handleEnterKeyPress(event, 'invoiceNo');
+            });
+
+            // Monitor Enter keypress on Invoice Number and submit form if Enter is pressed
+            document.getElementById('invoiceNo').addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    document.getElementById('additionalDetailsForm').submit();
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>{{ vendor.vendorName }}</h1>
+    <form id="additionalDetailsForm" action="/input/{{ vendor.vendorCode }}" method="post">
+        <label for="totalSkids">Total Skids:</label>
+        <input type="text" id="totalSkids" name="totalSkids"><br>
+        
+        <label for="invoiceNo">Invoice Number:</label>
+        <input type="text" id="invoiceNo" name="invoiceNo"><br>
+        
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
