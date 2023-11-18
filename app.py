@@ -186,6 +186,6 @@ if __name__ == "__main__":
     if env == 'production':
         port = int(os.environ.get('PORT', 80))  # Use PORT environment variable in production, default to 80
     else:
-        port = 5888  # Use 5000 for local development
+        port = 5000  # Use 5000 for local development
 
     app.run(host='0.0.0.0', port=port)
