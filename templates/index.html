@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vendor Code Entry</title>
+</head>
+<body>
+    <h1>Enter Vendor Code</h1>
+    <form method="POST" action="/">
+        <label for="vendorCode">Vendor Code:</label><br>
+        <input type="text" id="vendorCode" name="vendorCode" autofocus><br><br>
+        <input type="submit" value="Submit">
+    </form>
+    <a href="{{ url_for('print_labels') }}">Print Labels</a>
+     <h1>Today's Records</h1>
+    <h2>Unique Companies Today: {{ unique_companies_count }}</h2>
+    <h2>Total Skids Today: {{ total_skids_today }}</h2>
+    
+    <table border="1">
+        <tr>
+            <th>SN</th>
+            <th>Vendor Code</th>
+            <th>Vendor Name</th>
+            <th>Date</th>
+            <th>Total Skids</th>
+            <th>Current Skids</th>
+            <th>Invoice No</th>
+            <th>Serial No</th>
+        </tr>
+        {% for record in records %}
+        <tr>
+            <td>{{ record.SN }}</td>
+            <td>
+                <a href="{{ url_for('print_vendor_labels', vendorCode=record.vendorCode) }}">
+                    {{ record.vendorCode }}
+                </a>
+            </td>
+            
+            <td>{{ record.vendorName }}</td>
+            <td>{{ record.date }}</td>
+            <td>{{ record.total_skids }}</td>
+            <td>{{ record.current_skids }}</td>
+            <td>{{ record.invoiceNo }}</td>
+            <td>{{ record.serialNo }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
