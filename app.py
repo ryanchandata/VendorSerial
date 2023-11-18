@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, make_response
 import csv
+import os
 import datetime
 import barcode
 from barcode.writer import ImageWriter
@@ -10,20 +11,25 @@ import base64
 app = Flask(__name__)
 
 def generate_barcode(serial_no):
-    CODE128 = barcode.get_barcode_class('code128')
-    barcode_instance = CODE128(serial_no, writer=ImageWriter())
+    try:
+        CODE128 = barcode.get_barcode_class('code128')
+        barcode_instance = CODE128(serial_no, writer=ImageWriter())
 
-    # Adjusting options
-    options = {
-        'write_text': False,  # Ensure the text is written
-        'text_distance': 3,  # Distance between barcode and text
-        'quiet_zone': 1,     # Margins around the barcode
-    }
-    buffered = BytesIO()
-    barcode_instance.write(buffered, options=options)
-    barcode_data = base64.b64encode(buffered.getvalue()).decode()
-    return f"data:image/png;base64,{barcode_data}"
+        # Adjusting options
+        options = {
+            'write_text': False,  # Ensure the text is not written
+            'text_distance': 3,   # Distance between barcode and (non-existent) text
+            'quiet_zone': 1,      # Margins around the barcode
+        }
 
+        buffered = BytesIO()
+        barcode_instance.write(buffered, options=options)
+        barcode_data = base64.b64encode(buffered.getvalue()).decode()
+        return f"data:image/png;base64,{barcode_data}"
+
+    except Exception as e:
+        print(f"Error generating barcode: {e}")
+        return None
 
 def read_today_records():
     with open('db.csv', mode='r') as file:
@@ -171,5 +177,11 @@ def additional_input(vendor_code):
     print(vendor)  # Add this line to debug
     return render_template('additional_input.html', vendor=vendor)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    env = os.environ.get('FLASK_ENV', 'development')
+    if env == 'production':
+        port = int(os.environ.get('PORT', 80))  # Use PORT environment variable in production, default to 80
+    else:
+        port = 5555  # Use 5000 for local development
+
+    app.run(host='0.0.0.0', port=port)
