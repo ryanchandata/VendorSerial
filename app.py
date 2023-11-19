@@ -13,7 +13,7 @@ import psycopg2
 app = Flask(__name__)
 
 # Database connection
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.environ.get('postgres://ttuegkhsfidgdy:2bbe235cab231852e60abc20143bf3dec1e10e47602cd0316097b25cd4d5baa1@ec2-3-232-218-211.compute-1.amazonaws.com:5432/d3p9fn1hu4hmsn')
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
 def generate_barcode(serial_no):
