@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Records</title>
+</head>
+<body>
+    <h1>All Records</h1>
+    <table border="1">
+        <tr>
+            <th>SN</th>
+            <th>Vendor Code</th>
+            <th>Vendor Name</th>
+            <th>Date</th>
+            <th>Total Skids</th>
+            <th>Current Skids</th>
+            <th>Invoice No</th>
+            <th>Serial No</th>
+            <th>Status</th>
+        </tr>
+        {% for record in records %}
+        <tr>
+            <td>{{ record.SN }}</td>
+            <td>{{ record.vendorCode }}</td>
+            <td>{{ record.vendorName }}</td>
+            <td>{{ record.date }}</td>
+            <td>{{ record.total_skids }}</td>
+            <td>{{ record.current_skids }}</td>
+            <td>{{ record.invoiceNo }}</td>
+            <td>{{ record.serialNo }}</td>
+            <td>{{ record.status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="/">Back to Home</a>
+</body>
+</html>

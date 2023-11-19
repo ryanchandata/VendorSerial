@@ -42,6 +42,19 @@ def read_today_records():
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         return [row for row in reader if row['date'] == today_str]
 
+@app.route('/all_records')
+def all_records():
+    records = read_all_records()  # Function to read all records from the database
+    return render_template('all_records.html', records=records)
+
+def read_all_records():
+    # Implement the logic to read all records from your database
+    # For example, reading from a CSV file
+    with open('db.csv', mode='r') as file:
+        reader = csv.DictReader(file)
+        return list(reader)
+
+
 # Function to read data from vendor.csv
 def read_vendor_csv():
     with open('vendor.csv', mode='r') as file:
@@ -213,7 +226,8 @@ def additional_input(vendor_code):
                 'total_skids': total_skids,
                 'current_skid': current_skid,
                 'invoiceNo': invoice_no,
-                'serialNo': serial_no
+                'serialNo': serial_no,
+                'status' : 'N'
             }
             write_to_db(record)
 

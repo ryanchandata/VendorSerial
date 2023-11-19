@@ -42,15 +42,14 @@
         <input type="text" name="scannedCode" placeholder="Scan or enter code">
         <button type="submit">Submit</button>
     </form>
-    <br>
-    <a href="{{ url_for('print_labels') }}">Print All Labels</a>
     <h1>Today's Records</h1>
     <h2>Unique Companies Today: {{ unique_companies_count }}</h2>
     <h2>Total Skids Today: {{ total_skids_today }}</h2>
     <h2>Plan to Finish Skids Today: {{total_non_finished_skids}}</h2>
-    <button onclick="fetchAndDisplayRecords('/get_today_records')">Refresh Today's Records</button>
-    <button onclick="fetchAndDisplayRecords('/get_non_finished_skids')">Show Non-Finished Skids</button>
-    
+    <button onclick="fetchAndDisplayRecords('/get_today_records')">Show Today's All Records</button>
+    <button onclick="fetchAndDisplayRecords('/get_non_finished_skids')">Show Today's Non-Finished Skids</button>
+    <button onclick="location.href='{{ url_for('print_labels') }}'">Print Today All Labels</button>
+    <button onclick="location.href='/all_records'">View All Records</button>
     <table border="1">
         <thead>
             <tr>
