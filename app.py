@@ -9,12 +9,16 @@ from io import BytesIO
 import base64
 from flask import jsonify
 import psycopg2
+from psycopg2.extras import DictCursor
+
 
 app = Flask(__name__)
 
 # Database connection
 DATABASE_URL = os.environ.get('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+
+
 
 def generate_barcode(serial_no):
     print(f"Generating barcode for serial number: {serial_no}")  # Log the serial number
@@ -40,14 +44,14 @@ def generate_barcode(serial_no):
 
 
 def read_today_records():
-    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+    with conn.cursor() as cur:
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         cur.execute("SELECT * FROM records WHERE date = %s", (today_str,))
-        return cur.fetchall()
+        return [dict(row) for row in cur.fetchall()] 
 
 # Function to read all records from the database
 def read_all_records():
-    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+    with conn.cursor(cursor_factory=DictCursor) as cur:
         cur.execute("SELECT * FROM records")
         return cur.fetchall()
 
@@ -89,6 +93,14 @@ def get_next_unique_id():
     with open('serial_counter.txt', 'w') as file:
         file.write(str(current_id + 1))
     return current_id + 1
+
+# Function to read data from vendor.csv
+def read_vendor_csv():
+    with open('vendor.csv', mode='r') as file:
+        reader = csv.DictReader(file)
+        vendor_list = list(reader)
+    return vendor_list
+
 
 @app.route('/all_records')
 def all_records():
