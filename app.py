@@ -8,6 +8,7 @@ from barcode import get_barcode_class
 from io import BytesIO
 import base64
 from flask import jsonify
+import psycopg2
 
 app = Flask(__name__)
 
