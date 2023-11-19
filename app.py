@@ -11,6 +11,10 @@ from flask import jsonify
 
 app = Flask(__name__)
 
+# Database connection
+DATABASE_URL = os.environ.get('DATABASE_URL')
+conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+
 def generate_barcode(serial_no):
     print(f"Generating barcode for serial number: {serial_no}")  # Log the serial number
     try:
@@ -34,33 +38,61 @@ def generate_barcode(serial_no):
         return None
 
 
-
 def read_today_records():
-    with open('db.csv', mode='r') as file:
-        reader = csv.DictReader(file)
-        date_today = datetime.datetime.now().strftime('%Y-%m-%d')
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-        return [row for row in reader if row['date'] == today_str]
+        cur.execute("SELECT * FROM records WHERE date = %s", (today_str,))
+        return cur.fetchall()
+
+# Function to read all records from the database
+def read_all_records():
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute("SELECT * FROM records")
+        return cur.fetchall()
+
+# Function to get the largest SN from the database
+def get_largest_sn():
+    with conn.cursor() as cur:
+        cur.execute("SELECT MAX(sn) FROM records")
+        result = cur.fetchone()
+        return result[0] if result[0] is not None else 0
+
+# Function to write to the database
+def write_to_db(data):
+    with conn.cursor() as cur:
+        # Assuming your table columns and data dict keys match
+        columns = data.keys()
+        values = [data[column] for column in columns]
+        insert_query = "INSERT INTO records ({}) VALUES ({})".format(
+            ', '.join(columns), ', '.join(['%s'] * len(values))
+        )
+        cur.execute(insert_query, values)
+        conn.commit()
+
+# Function to update record status in the database
+def handle_serial_number(serial_number):
+    with conn.cursor() as cur:
+        cur.execute("UPDATE records SET status = 'Y' WHERE serialno = %s", (serial_number,))
+        conn.commit()
+    return redirect(url_for('index'))
+
+
+# Function to get the next unique ID
+def get_next_unique_id():
+    try:
+        with open('serial_counter.txt', 'r') as file:
+            current_id = int(file.read().strip())
+    except FileNotFoundError:
+        current_id = 0
+    
+    with open('serial_counter.txt', 'w') as file:
+        file.write(str(current_id + 1))
+    return current_id + 1
 
 @app.route('/all_records')
 def all_records():
     records = read_all_records()  # Function to read all records from the database
     return render_template('all_records.html', records=records)
-
-def read_all_records():
-    # Implement the logic to read all records from your database
-    # For example, reading from a CSV file
-    with open('db.csv', mode='r') as file:
-        reader = csv.DictReader(file)
-        return list(reader)
-
-
-# Function to read data from vendor.csv
-def read_vendor_csv():
-    with open('vendor.csv', mode='r') as file:
-        reader = csv.DictReader(file)
-        vendor_list = list(reader)
-    return vendor_list
 
 @app.route('/print_vendor_labels')
 def print_vendor_labels():
@@ -75,65 +107,6 @@ def print_vendor_labels():
     return render_template('print_labels.html', records=records)
 
 
-# Function to get the largest SN from db.csv
-def get_largest_sn():
-    try:
-        with open('db.csv', mode='r') as file:
-            reader = csv.DictReader(file)
-            sn_list = [int(row['SN']) for row in reader if 'SN' in row and row['SN'].isdigit()]
-            return max(sn_list, default=0)
-    except FileNotFoundError:
-        return 0  # Return 0 if file not found, meaning no records yet
-
-# Function to write to db.csv
-def write_to_db(data):
-    with open('db.csv', mode='a', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=data.keys())
-        writer.writerow(data)
-
-# Function to read records for today from db.csv
-def read_today_records():
-    with open('db.csv', mode='r') as file:
-        reader = csv.DictReader(file)
-        today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-        return [row for row in reader if row['date'] == today_str]
-
-def read_records_for_vendor(vendor_code, date):
-    with open('db.csv', 'r') as file:
-        reader = csv.DictReader(file)
-        return [row for row in reader if row['vendorCode'] == vendor_code and row['date'] == date]
-
-def handle_serial_number(serial_number):
-    records = []
-    updated = False
-
-    with open('db.csv', mode='r') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            if row['serialNo'] == serial_number:
-                row['status'] = 'Y'  # Update status to 'Y'
-                updated = True
-            records.append(row)
-
-    if updated:
-        with open('db.csv', mode='w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=records[0].keys())
-            writer.writeheader()
-            writer.writerows(records)
-
-    return redirect(url_for('index'))
-
-# Function to get the next unique ID
-def get_next_unique_id():
-    try:
-        with open('serial_counter.txt', 'r') as file:
-            current_id = int(file.read().strip())
-    except FileNotFoundError:
-        current_id = 0
-    
-    with open('serial_counter.txt', 'w') as file:
-        file.write(str(current_id + 1))
-    return current_id + 1
 
 # Luhn Algorithm for checksum digit
 def calculate_luhn(number):
