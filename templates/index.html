@@ -42,8 +42,8 @@
         <input type="text" name="scannedCode" placeholder="Scan or enter code">
         <button type="submit">Submit</button>
     </form>
-    
-    <a href="{{ url_for('print_labels') }}">Print Labels</a>
+    <br>
+    <a href="{{ url_for('print_labels') }}">Print All Labels</a>
     <h1>Today's Records</h1>
     <h2>Unique Companies Today: {{ unique_companies_count }}</h2>
     <h2>Total Skids Today: {{ total_skids_today }}</h2>
