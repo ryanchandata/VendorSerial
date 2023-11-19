@@ -20,14 +20,14 @@
         </tr>
         {% for record in records %}
         <tr>
-            <td>{{ record.SN }}</td>
-            <td>{{ record.vendorCode }}</td>
-            <td>{{ record.vendorName }}</td>
+            <td>{{ record.sn }}</td>
+            <td>{{ record.vendor_code }}</td>
+            <td>{{ record.vendor_name }}</td>
             <td>{{ record.date }}</td>
             <td>{{ record.total_skids }}</td>
-            <td>{{ record.current_skids }}</td>
-            <td>{{ record.invoiceNo }}</td>
-            <td>{{ record.serialNo }}</td>
+            <td>{{ record.current_skid }}</td>
+            <td>{{ record.invoice_no }}</td>
+            <td>{{ record.serial_no }}</td>
             <td>{{ record.status }}</td>
         </tr>
         {% endfor %}

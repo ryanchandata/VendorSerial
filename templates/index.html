@@ -23,14 +23,14 @@
             records.forEach(record => {
                 const row = recordsContainer.insertRow();
                 // Add cells and content for each record
-                row.insertCell(0).innerText = record.SN;
-                row.insertCell(1).innerHTML = '<a href="/print_vendor_labels?vendorCode=' + record.vendorCode + '">' + record.vendorCode + '</a>';
-                row.insertCell(2).innerText = record.vendorName;
+                row.insertCell(0).innerText = record.sn;
+                row.insertCell(1).innerHTML = '<a href="/print_vendor_labels?vendor_code=' + record.vendor_code + '">' + record.vendor_code + '</a>';
+                row.insertCell(2).innerText = record.vendor_name;
                 row.insertCell(3).innerText = record.date;
                 row.insertCell(4).innerText = record.total_skids;
-                row.insertCell(5).innerText = record.current_skids;
-                row.insertCell(6).innerText = record.invoiceNo;
-                row.insertCell(7).innerText = record.serialNo;
+                row.insertCell(5).innerText = record.current_skid;
+                row.insertCell(6).innerText = record.invoice_no;
+                row.insertCell(7).innerText = record.serial_no;
                 row.insertCell(8).innerText = record.status;
             });
         }
@@ -67,14 +67,14 @@
         <tbody id="recordsContainer">
             {% for record in records %}
             <tr>
-                <td>{{ record.SN }}</td>
-                <td><a href="{{ url_for('print_vendor_labels', vendorCode=record.vendorCode) }}">{{ record.vendorCode }}</a></td>
-                <td>{{ record.vendorName }}</td>
+                <td>{{ record.sn }}</td>
+                <td><a href="{{ url_for('print_vendor_labels', vendorCode=record.vendor_code) }}">{{ record.vendor_code }}</a></td>
+                <td>{{ record.vendor_name }}</td>
                 <td>{{ record.date }}</td>
                 <td>{{ record.total_skids }}</td>
-                <td>{{ record.current_skids }}</td>
-                <td>{{ record.invoiceNo }}</td>
-                <td>{{ record.serialNo }}</td>
+                <td>{{ record.current_skid }}</td>
+                <td>{{ record.invoice_no }}</td>
+                <td>{{ record.serial_no }}</td>
                 <td>{{ record.status }}</td>
             </tr>
             {% endfor %}

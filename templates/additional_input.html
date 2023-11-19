@@ -5,7 +5,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
             // Auto-focus on the Total Skids input field
-            document.getElementById('totalSkids').focus();
+            document.getElementById('total_skids').focus();
 
             // Function to handle the Enter keypress
             function handleEnterKeyPress(event, nextFieldId) {
@@ -16,12 +16,12 @@
             }
 
             // Monitor Enter keypress on Total Skids
-            document.getElementById('totalSkids').addEventListener('keydown', (event) => {
-                handleEnterKeyPress(event, 'invoiceNo');
+            document.getElementById('total_skids').addEventListener('keydown', (event) => {
+                handleEnterKeyPress(event, 'invoice_no');
             });
 
             // Monitor Enter keypress on Invoice Number and submit form if Enter is pressed
-            document.getElementById('invoiceNo').addEventListener('keydown', (event) => {
+            document.getElementById('invoice_no').addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
                     event.preventDefault();
                     document.getElementById('additionalDetailsForm').submit();
@@ -31,13 +31,13 @@
     </script>
 </head>
 <body>
-    <h1>{{ vendor.vendorName }}</h1>
-    <form id="additionalDetailsForm" action="/input/{{ vendor.vendorCode }}" method="post">
-        <label for="totalSkids">Total Skids:</label>
-        <input type="text" id="totalSkids" name="totalSkids"><br>
+    <h1>{{ vendor.vendor_Name }}</h1>
+    <form id="additionalDetailsForm" action="/input/{{ vendor.vendor_code }}" method="post">
+        <label for="total_skids">Total Skids:</label>
+        <input type="text" id="total_skids" name="total_skids"><br>
         
-        <label for="invoiceNo">Invoice Number:</label>
-        <input type="text" id="invoiceNo" name="invoiceNo"><br>
+        <label for="invoice_no">Invoice Number:</label>
+        <input type="text" id="invoice_no" name="invoice_no"><br>
         
         <input type="submit" value="Submit">
     </form>

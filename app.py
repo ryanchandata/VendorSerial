@@ -18,8 +18,6 @@ app = Flask(__name__)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
-
-
 def generate_barcode(serial_no):
     print(f"Generating barcode for serial number: {serial_no}")  # Log the serial number
     try:
@@ -44,16 +42,27 @@ def generate_barcode(serial_no):
 
 
 def read_today_records():
-    with conn.cursor() as cur:
+    with conn.cursor(cursor_factory=DictCursor) as cur:
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-        cur.execute("SELECT * FROM records WHERE date = %s", (today_str,))
-        return [dict(row) for row in cur.fetchall()] 
+        try:
+            cur.execute("SELECT * FROM records WHERE date = %s", (today_str,))
+            return [dict(record) for record in cur.fetchall()]
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return []
+
 
 # Function to read all records from the database
 def read_all_records():
-    with conn.cursor(cursor_factory=DictCursor) as cur:
-        cur.execute("SELECT * FROM records")
-        return cur.fetchall()
+    try:
+        with conn.cursor(cursor_factory=DictCursor) as cur:
+            cur.execute("SELECT * FROM records")
+            return cur.fetchall()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+        return []
+
 
 # Function to get the largest SN from the database
 def get_largest_sn():
@@ -77,7 +86,7 @@ def write_to_db(data):
 # Function to update record status in the database
 def handle_serial_number(serial_number):
     with conn.cursor() as cur:
-        cur.execute("UPDATE records SET status = 'Y' WHERE serialno = %s", (serial_number,))
+        cur.execute("UPDATE records SET status = 'Y' WHERE serial_no = %s", (serial_number,))
         conn.commit()
     return redirect(url_for('index'))
 
@@ -109,7 +118,7 @@ def all_records():
 
 @app.route('/print_vendor_labels')
 def print_vendor_labels():
-    vendor_code = request.args.get('vendorCode')
+    vendor_code = request.args.get('vendor_code')
     date_today = datetime.datetime.now().strftime('%Y-%m-%d')
     records = read_records_for_vendor(vendor_code, date_today)
 
@@ -157,17 +166,21 @@ def get_non_finished_skids():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        vendor_code = request.form['vendorCode']
+        vendor_code = request.form['vendor_code']
         vendors = read_vendor_csv()
-        vendor = next((item for item in vendors if item["vendorCode"] == vendor_code), None)
+        vendor = next((item for item in vendors if item["vendor_code"] == vendor_code), None)
         if vendor:
             return redirect(url_for('additional_input', vendor_code=vendor_code))
 
-    records = read_today_records()
-    unique_companies = {record['vendorName'] for record in records}
-    total_skids_today = len(records)
+    #records = read_today_records()
+    records = '12'
+    #unique_companies = {record['vendorName'] for record in records}
+    unique_companies = '333'
+    #total_skids_today = len(records)
+    total_skids_today = '12'
     # Calculate total non-finished skids
-    total_non_finished_skids = sum(1 for record in records if record.get('status') != 'Y')
+    # total_non_finished_skids = sum(1 for record in records if record.get('status') != 'Y')
+    total_non_finished_skids = '22'
     return render_template('index.html', records=records, unique_companies_count=len(unique_companies), 
                            total_skids_today=total_skids_today, total_non_finished_skids=total_non_finished_skids)
 
@@ -175,7 +188,7 @@ def index():
 def print_labels():
     records = read_today_records()
     for record in records:
-        record['barcode_image'] = generate_barcode(record['serialNo'])
+        record['barcode_image'] = generate_barcode(record['serial_no'])
     return render_template('print_labels.html', records=records)
 
 @app.route('/scan_input', methods=['POST'])
@@ -191,14 +204,15 @@ def scan_input():
 @app.route('/input/<vendor_code>', methods=['GET', 'POST'])
 def additional_input(vendor_code):
     vendors = read_vendor_csv()
-    vendor = next((item for item in vendors if item["vendorCode"] == vendor_code), None)
+    vendor = next((item for item in vendors if item["vendor_code"] == vendor_code), None)
     if not vendor:
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        total_skids = int(request.form['totalSkids'])
-        invoice_no = request.form['invoiceNo']
+        total_skids = request.form.get('total_skids')
+        invoice_no = request.form['invoice_no']
         largest_sn = get_largest_sn()
+        total_skids = int(total_skids)
 
         for current_skid in range(1, total_skids + 1):
             sn = largest_sn + current_skid
@@ -206,13 +220,13 @@ def additional_input(vendor_code):
             serial_no = generate_serial("01", unique_id)
             record = {
                 'SN': sn,
-                'vendorCode': vendor_code,
-                'vendorName': vendor['vendorName'],
+                'vendor_code': vendor_code,
+                'vendor_name': vendor['vendor_name'],
                 'date': datetime.datetime.now().strftime("%Y-%m-%d"),
                 'total_skids': total_skids,
                 'current_skid': current_skid,
-                'invoiceNo': invoice_no,
-                'serialNo': serial_no,
+                'invoice_no': invoice_no,
+                'serial_no': serial_no,
                 'status' : 'N'
             }
             write_to_db(record)
