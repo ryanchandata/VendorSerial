@@ -7,7 +7,7 @@ from barcode.writer import ImageWriter
 from barcode import get_barcode_class
 from io import BytesIO
 import base64
-
+from flask import jsonify
 
 app = Flask(__name__)
 
@@ -90,6 +90,25 @@ def read_records_for_vendor(vendor_code, date):
         reader = csv.DictReader(file)
         return [row for row in reader if row['vendorCode'] == vendor_code and row['date'] == date]
 
+def handle_serial_number(serial_number):
+    records = []
+    updated = False
+
+    with open('db.csv', mode='r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            if row['serialNo'] == serial_number:
+                row['status'] = 'Y'  # Update status to 'Y'
+                updated = True
+            records.append(row)
+
+    if updated:
+        with open('db.csv', mode='w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=records[0].keys())
+            writer.writeheader()
+            writer.writerows(records)
+
+    return redirect(url_for('index'))
 
 # Function to get the next unique ID
 def get_next_unique_id():
@@ -124,6 +143,16 @@ def generate_serial(operation_type, unique_id):
     checksum = calculate_luhn(serial)
     return f"{serial}{checksum}"
 
+@app.route('/get_today_records')
+def get_today_records():
+    records = read_today_records()
+    return jsonify(records)
+
+@app.route('/get_non_finished_skids')
+def get_non_finished_skids():
+    records = read_today_records()
+    non_finished_records = [record for record in records if record.get('status') != 'Y']
+    return jsonify(non_finished_records)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -138,8 +167,10 @@ def index():
     records = read_today_records()
     unique_companies = {record['vendorName'] for record in records}
     total_skids_today = len(records)
-
-    return render_template('index.html', records=records, unique_companies_count=len(unique_companies), total_skids_today=total_skids_today)
+    # Calculate total non-finished skids
+    total_non_finished_skids = sum(1 for record in records if record.get('status') != 'Y')
+    return render_template('index.html', records=records, unique_companies_count=len(unique_companies), 
+                           total_skids_today=total_skids_today, total_non_finished_skids=total_non_finished_skids)
 
 @app.route('/print_labels')
 def print_labels():
@@ -147,6 +178,15 @@ def print_labels():
     for record in records:
         record['barcode_image'] = generate_barcode(record['serialNo'])
     return render_template('print_labels.html', records=records)
+
+@app.route('/scan_input', methods=['POST'])
+def scan_input():
+    scanned_code = request.form.get('scannedCode')
+
+    if scanned_code.startswith('04') and len(scanned_code) == 20:
+        return handle_serial_number(scanned_code)
+    else:
+        return redirect(url_for('additional_input', vendor_code=scanned_code))
 
 
 @app.route('/input/<vendor_code>', methods=['GET', 'POST'])
@@ -185,7 +225,6 @@ if __name__ == "__main__":
     env = os.environ.get('FLASK_ENV', 'development')
     if env == 'production':
         port = int(os.environ.get('PORT', 80))  # Use PORT environment variable in production, default to 80
+        app.run(host='0.0.0.0', port=port, debug=False)
     else:
-        port = 5000  # Use 5000 for local development
-
-    app.run(host='0.0.0.0', port=port)
+        app.run(host='0.0.0.0', port=5888, debug=True)  # Use 5000 for local development with debug mode enabled

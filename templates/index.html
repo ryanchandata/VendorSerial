@@ -3,47 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <title>Vendor Code Entry</title>
+    <style>
+        /* Add any additional styling you require */
+    </style>
+    <script>
+        // JavaScript functions to fetch and update records
+        function fetchAndDisplayRecords(url) {
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                updateRecordsDisplay(data);
+            });
+        }
+
+        function updateRecordsDisplay(records) {
+            const recordsContainer = document.getElementById('recordsContainer');
+            recordsContainer.innerHTML = '';
+
+            records.forEach(record => {
+                const row = recordsContainer.insertRow();
+                // Add cells and content for each record
+                row.insertCell(0).innerText = record.SN;
+                row.insertCell(1).innerHTML = '<a href="/print_vendor_labels?vendorCode=' + record.vendorCode + '">' + record.vendorCode + '</a>';
+                row.insertCell(2).innerText = record.vendorName;
+                row.insertCell(3).innerText = record.date;
+                row.insertCell(4).innerText = record.total_skids;
+                row.insertCell(5).innerText = record.current_skids;
+                row.insertCell(6).innerText = record.invoiceNo;
+                row.insertCell(7).innerText = record.serialNo;
+                row.insertCell(8).innerText = record.status;
+            });
+        }
+    </script>
 </head>
 <body>
     <h1>Enter Vendor Code</h1>
-    <form method="POST" action="/">
-        <label for="vendorCode">Vendor Code:</label><br>
-        <input type="text" id="vendorCode" name="vendorCode" autofocus><br><br>
-        <input type="submit" value="Submit">
+    <form action="/scan_input" method="post">
+        <input type="text" name="scannedCode" placeholder="Scan or enter code">
+        <button type="submit">Submit</button>
     </form>
+    
     <a href="{{ url_for('print_labels') }}">Print Labels</a>
-     <h1>Today's Records</h1>
+    <h1>Today's Records</h1>
     <h2>Unique Companies Today: {{ unique_companies_count }}</h2>
     <h2>Total Skids Today: {{ total_skids_today }}</h2>
+    <h2>Plan to Finish Skids Today: {{total_non_finished_skids}}</h2>
+    <button onclick="fetchAndDisplayRecords('/get_today_records')">Refresh Today's Records</button>
+    <button onclick="fetchAndDisplayRecords('/get_non_finished_skids')">Show Non-Finished Skids</button>
     
     <table border="1">
-        <tr>
-            <th>SN</th>
-            <th>Vendor Code</th>
-            <th>Vendor Name</th>
-            <th>Date</th>
-            <th>Total Skids</th>
-            <th>Current Skids</th>
-            <th>Invoice No</th>
-            <th>Serial No</th>
-        </tr>
-        {% for record in records %}
-        <tr>
-            <td>{{ record.SN }}</td>
-            <td>
-                <a href="{{ url_for('print_vendor_labels', vendorCode=record.vendorCode) }}">
-                    {{ record.vendorCode }}
-                </a>
-            </td>
-            
-            <td>{{ record.vendorName }}</td>
-            <td>{{ record.date }}</td>
-            <td>{{ record.total_skids }}</td>
-            <td>{{ record.current_skids }}</td>
-            <td>{{ record.invoiceNo }}</td>
-            <td>{{ record.serialNo }}</td>
-        </tr>
-        {% endfor %}
+        <thead>
+            <tr>
+                <th>SN</th>
+                <th>Vendor Code</th>
+                <th>Vendor Name</th>
+                <th>Date</th>
+                <th>Total Skids</th>
+                <th>Current Skids</th>
+                <th>Invoice No</th>
+                <th>Serial No</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="recordsContainer">
+            {% for record in records %}
+            <tr>
+                <td>{{ record.SN }}</td>
+                <td><a href="{{ url_for('print_vendor_labels', vendorCode=record.vendorCode) }}">{{ record.vendorCode }}</a></td>
+                <td>{{ record.vendorName }}</td>
+                <td>{{ record.date }}</td>
+                <td>{{ record.total_skids }}</td>
+                <td>{{ record.current_skids }}</td>
+                <td>{{ record.invoiceNo }}</td>
+                <td>{{ record.serialNo }}</td>
+                <td>{{ record.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 </body>
 </html>
