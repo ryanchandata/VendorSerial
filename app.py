@@ -25,9 +25,11 @@ def generate_barcode(serial_no):
 
         # Adjusting options
         options = {
-            'write_text': False,  # Ensure the text is not written
-            'text_distance': 3,   # Distance between barcode and text
-            'quiet_zone': 1,      # Margins around the barcode
+            'write_text': False,
+            'text_distance': 5,   # Adjust if you want more distance between barcode and text
+            'quiet_zone': 1.5,    # Increase the margins around the barcode
+            'module_height': 11.0, # Increase the height of the bars
+            'module_width': 0.2   # Increase the width of the bars
         }
 
         buffered = BytesIO()
