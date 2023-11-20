@@ -101,16 +101,19 @@ def handle_serial_number(serial_number):
 
 
 # Function to get the next unique ID
-def get_next_unique_id():
+def get_next_unique_id(increment=1):
     try:
         with open('serial_counter.txt', 'r') as file:
             current_id = int(file.read().strip())
     except FileNotFoundError:
         current_id = 0
-    
+
+    new_id = current_id + increment
     with open('serial_counter.txt', 'w') as file:
-        file.write(str(current_id + 1))
-    return current_id + 1
+        file.write(str(new_id))
+
+    return new_id
+
 
 # Function to read data from vendor.csv
 def read_vendor_csv():
