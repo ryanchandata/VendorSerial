@@ -68,7 +68,7 @@
             {% for record in records %}
             <tr>
                 <td>{{ record.sn }}</td>
-                <td><a href="{{ url_for('print_vendor_labels', vendorCode=record.vendor_code) }}">{{ record.vendor_code }}</a></td>
+                <td><a href="{{ url_for('print_vendor_labels', vendor_code=record.vendor_code) }}">{{ record.vendor_code }}</a></td>
                 <td>{{ record.vendor_name }}</td>
                 <td>{{ record.date }}</td>
                 <td>{{ record.total_skids }}</td>

@@ -1,16 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, make_response
+from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
+import psycopg2
+from psycopg2.extras import DictCursor
 import csv
-import os
 import datetime
 import barcode
 from barcode.writer import ImageWriter
 from barcode import get_barcode_class
 from io import BytesIO
 import base64
-from flask import jsonify
-import psycopg2
-from psycopg2.extras import DictCursor
-
+import os
 
 app = Flask(__name__)
 
@@ -18,6 +16,7 @@ app = Flask(__name__)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
+# Barcode Generation
 def generate_barcode(serial_no):
     print(f"Generating barcode for serial number: {serial_no}")  # Log the serial number
     try:
@@ -40,7 +39,7 @@ def generate_barcode(serial_no):
         print(f"Error generating barcode for {serial_no}: {e}")  # Log any errors
         return None
 
-
+# Database Read Functions
 def read_today_records():
     with conn.cursor(cursor_factory=DictCursor) as cur:
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -62,6 +61,16 @@ def read_all_records():
         print(f"An error occurred: {e}")
         conn.rollback()
         return []
+
+def read_records_for_vendor(vendor_code, date):
+    with conn.cursor(cursor_factory=DictCursor) as cur:
+        try:
+            cur.execute("SELECT * FROM records WHERE vendor_code = %s AND date = %s", (vendor_code, date))
+            return [dict(record) for record in cur.fetchall()]
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return []
+
 
 
 # Function to get the largest SN from the database
@@ -118,16 +127,18 @@ def all_records():
 
 @app.route('/print_vendor_labels')
 def print_vendor_labels():
-    vendor_code = request.args.get('vendor_code')
+    vendor_code = request.args.get('vendor_code')  # Ensure this matches the URL parameter
     date_today = datetime.datetime.now().strftime('%Y-%m-%d')
     records = read_records_for_vendor(vendor_code, date_today)
 
+    # Log for debugging
+    print(f"Records for vendor {vendor_code} on {date_today}: {records}")
+
     # Add this loop to assign barcode images to each record
     for record in records:
-        record['barcode_image'] = generate_barcode(record['serialNo'])
+        record['barcode_image'] = generate_barcode(record['serial_no'])
 
     return render_template('print_labels.html', records=records)
-
 
 
 # Luhn Algorithm for checksum digit
@@ -172,15 +183,11 @@ def index():
         if vendor:
             return redirect(url_for('additional_input', vendor_code=vendor_code))
 
-    #records = read_today_records()
-    records = '12'
-    #unique_companies = {record['vendorName'] for record in records}
-    unique_companies = '333'
-    #total_skids_today = len(records)
-    total_skids_today = '12'
+    records = read_today_records()
+    unique_companies = {record['vendor_name'] for record in records}
+    total_skids_today = len(records)
     # Calculate total non-finished skids
-    # total_non_finished_skids = sum(1 for record in records if record.get('status') != 'Y')
-    total_non_finished_skids = '22'
+    total_non_finished_skids = sum(1 for record in records if record.get('status') != 'Y')
     return render_template('index.html', records=records, unique_companies_count=len(unique_companies), 
                            total_skids_today=total_skids_today, total_non_finished_skids=total_non_finished_skids)
 
