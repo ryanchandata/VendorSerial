@@ -33,6 +33,7 @@
 <body>
     <h1>{{ vendor.vendor_Name }}</h1>
     <form id="additionalDetailsForm" action="/input/{{ vendor.vendor_code }}" method="post">
+        <h1>Vendor: {{ vendor.vendor_name }}</h1>
         <label for="total_skids">Total Skids:</label>
         <input type="text" id="total_skids" name="total_skids" autofocus><br>
         
