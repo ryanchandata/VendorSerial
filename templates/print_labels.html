@@ -72,9 +72,9 @@
                 <div class="label-content">
                     <h3>{{ record.vendor_name }}</h3>
                     <strong class="invoice-number">{{ record.date }}</strong><br>
-                    <strong class="invoice-number">INV : {{ record.invoice_no }}</strong>
+                    <strong>INV : {{ record.invoice_no }}</strong>
                     <img src="{{ record.barcode_image }}" alt="Barcode" class="barcode"><br>
-                    <strong>{{ record.serial_no }}</strong><br><br>
+                    <strong>{{ record.serial_no }}</strong><br>
                     <strong class="skids">{{ record.current_skid }} / {{ record.total_skids }}</strong><br>
                 </div>
             </div>
