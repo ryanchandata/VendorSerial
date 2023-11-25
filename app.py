@@ -57,7 +57,7 @@ def read_today_records():
 def read_all_records():
     try:
         with conn.cursor(cursor_factory=DictCursor) as cur:
-            cur.execute("SELECT * FROM records")
+            cur.execute("SELECT * FROM records2")
             return cur.fetchall()
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -67,18 +67,38 @@ def read_all_records():
 def read_records_for_vendor(vendor_code, date):
     with conn.cursor(cursor_factory=DictCursor) as cur:
         try:
-            cur.execute("SELECT * FROM records WHERE vendor_code = %s AND date = %s", (vendor_code, date))
+            cur.execute("SELECT * FROM records2 WHERE vendor_code = %s AND date = %s", (vendor_code, date))
             return [dict(record) for record in cur.fetchall()]
         except Exception as e:
             print(f"An error occurred: {e}")
             return []
 
-
+def count_finished_tasks(vendor_code):
+    with conn.cursor() as cur:
+        try:
+            today_date = datetime.datetime.now().strftime("%Y-%m-%d")
+            cur.execute("SELECT COUNT(*) FROM records2 WHERE vendor_code = %s AND status = 'Y' AND date::date = %s", (vendor_code, today_date))
+            result = cur.fetchone()
+            return result[0] if result else 0
+        except Exception as e:
+            print(f"An error occurred while counting finished tasks: {e}")
+            return 0
+        
+def count_total_tasks_today(vendor_code):
+    with conn.cursor() as cur:
+        try:
+            today_date = datetime.datetime.now().strftime("%Y-%m-%d")
+            cur.execute("SELECT COUNT(*) FROM records2 WHERE vendor_code = %s AND date::date = %s", (vendor_code, today_date))
+            result = cur.fetchone()
+            return result[0] if result else 0
+        except Exception as e:
+            print(f"An error occurred while counting total tasks: {e}")
+            return 0
 
 # Function to get the largest SN from the database
 def get_largest_sn():
     with conn.cursor() as cur:
-        cur.execute("SELECT MAX(sn) FROM records")
+        cur.execute("SELECT MAX(sn) FROM records2")
         result = cur.fetchone()
         return result[0] if result[0] is not None else 0
 
@@ -88,7 +108,7 @@ def write_to_db(data):
         # Assuming your table columns and data dict keys match
         columns = data.keys()
         values = [data[column] for column in columns]
-        insert_query = "INSERT INTO records ({}) VALUES ({})".format(
+        insert_query = "INSERT INTO records2 ({}) VALUES ({})".format(
             ', '.join(columns), ', '.join(['%s'] * len(values))
         )
         cur.execute(insert_query, values)
@@ -97,7 +117,7 @@ def write_to_db(data):
 # Function to update record status in the database
 def handle_serial_number(serial_number):
     with conn.cursor() as cur:
-        cur.execute("UPDATE records SET status = 'Y' WHERE serial_no = %s", (serial_number,))
+        cur.execute("UPDATE records2 SET status = 'Y' WHERE serial_no = %s", (serial_number,))
         conn.commit()
     return redirect(url_for('index'))
 
@@ -189,6 +209,10 @@ def index():
             return redirect(url_for('additional_input', vendor_code=vendor_code))
 
     records = read_today_records()
+    for record in records:
+        finished_tasks = count_finished_tasks(record['vendor_code'])
+        total_tasks = count_total_tasks_today(record['vendor_code'])
+        record['task_summary'] = f"{finished_tasks}/{total_tasks}"
     unique_companies = {record['vendor_name'] for record in records}
     total_skids_today = len(records)
     # Calculate total non-finished skids
@@ -234,7 +258,7 @@ def additional_input(vendor_code):
                 'SN': sn,
                 'vendor_code': vendor_code,
                 'vendor_name': vendor['vendor_name'],
-                'date': datetime.datetime.now().strftime("%Y-%m-%d"),
+                'date': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 'total_skids': total_skids,
                 'current_skid': current_skid,
                 'invoice_no': invoice_no,
