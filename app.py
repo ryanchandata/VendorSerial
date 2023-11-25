@@ -46,7 +46,7 @@ def read_today_records():
     with conn.cursor(cursor_factory=DictCursor) as cur:
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         try:
-            cur.execute("SELECT * FROM records WHERE date = %s", (today_str,))
+            cur.execute("SELECT * FROM records2 WHERE date = %s", (today_str,))
             return [dict(record) for record in cur.fetchall()]
         except Exception as e:
             print(f"An error occurred: {e}")
