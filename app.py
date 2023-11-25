@@ -46,7 +46,7 @@ def read_today_records():
     with conn.cursor(cursor_factory=DictCursor) as cur:
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         try:
-            cur.execute("SELECT * FROM records WHERE date = %s", (today_str,))
+            cur.execute("SELECT * FROM records WHERE DATE(date) = %s", (today_str,))
             return [dict(record) for record in cur.fetchall()]
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -67,7 +67,7 @@ def read_all_records():
 def read_records_for_vendor(vendor_code, date):
     with conn.cursor(cursor_factory=DictCursor) as cur:
         try:
-            cur.execute("SELECT * FROM records WHERE vendor_code = %s AND date = %s", (vendor_code, date))
+            cur.execute("SELECT * FROM records WHERE vendor_code = %s AND DATE(date) = %s", (vendor_code, date))
             return [dict(record) for record in cur.fetchall()]
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -77,7 +77,7 @@ def count_finished_tasks(vendor_code):
     with conn.cursor() as cur:
         try:
             today_date = datetime.datetime.now().strftime("%Y-%m-%d")
-            cur.execute("SELECT COUNT(*) FROM records WHERE vendor_code = %s AND status = 'Y' AND date::date = %s", (vendor_code, today_date))
+            cur.execute("SELECT COUNT(*) FROM records WHERE vendor_code = %s AND status = 'Y' AND DATE(date) = %s", (vendor_code, today_date))
             result = cur.fetchone()
             return result[0] if result else 0
         except Exception as e:
@@ -88,7 +88,7 @@ def count_total_tasks_today(vendor_code):
     with conn.cursor() as cur:
         try:
             today_date = datetime.datetime.now().strftime("%Y-%m-%d")
-            cur.execute("SELECT COUNT(*) FROM records WHERE vendor_code = %s AND date::date = %s", (vendor_code, today_date))
+            cur.execute("SELECT COUNT(*) FROM records WHERE vendor_code = %s AND DATE(date) = %s", (vendor_code, today_date))
             result = cur.fetchone()
             return result[0] if result else 0
         except Exception as e:
