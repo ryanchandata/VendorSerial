@@ -46,7 +46,7 @@ def read_today_records():
     with conn.cursor(cursor_factory=DictCursor) as cur:
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         try:
-            cur.execute("SELECT * FROM recordsß WHERE date = %s", (today_str,))
+            cur.execute("SELECT * FROM records WHERE date = %s", (today_str,))
             return [dict(record) for record in cur.fetchall()]
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -211,8 +211,7 @@ def index():
     records = read_today_records()
     for record in records:
         finished_tasks = count_finished_tasks(record['vendor_code'])
-        total_tasks = count_total_tasks_today(record['vendor_code'])
-        record['task_summary'] = f"{finished_tasks}/{total_tasks}"
+        record['task_summary'] = f"{finished_tasks}/{record['total_skids']}"
     unique_companies = {record['vendor_name'] for record in records}
     total_skids_today = len(records)
     # Calculate total non-finished skids
