@@ -57,7 +57,7 @@ def read_today_records():
 def read_all_records():
     try:
         with conn.cursor(cursor_factory=DictCursor) as cur:
-            cur.execute("SELECT * FROM records2")
+            cur.execute("SELECT * FROM records")
             return cur.fetchall()
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -67,7 +67,7 @@ def read_all_records():
 def read_records_for_vendor(vendor_code, date):
     with conn.cursor(cursor_factory=DictCursor) as cur:
         try:
-            cur.execute("SELECT * FROM records2 WHERE vendor_code = %s AND date = %s", (vendor_code, date))
+            cur.execute("SELECT * FROM records WHERE vendor_code = %s AND date = %s", (vendor_code, date))
             return [dict(record) for record in cur.fetchall()]
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -77,7 +77,7 @@ def count_finished_tasks(vendor_code):
     with conn.cursor() as cur:
         try:
             today_date = datetime.datetime.now().strftime("%Y-%m-%d")
-            cur.execute("SELECT COUNT(*) FROM records2 WHERE vendor_code = %s AND status = 'Y' AND date::date = %s", (vendor_code, today_date))
+            cur.execute("SELECT COUNT(*) FROM records WHERE vendor_code = %s AND status = 'Y' AND date::date = %s", (vendor_code, today_date))
             result = cur.fetchone()
             return result[0] if result else 0
         except Exception as e:
@@ -88,7 +88,7 @@ def count_total_tasks_today(vendor_code):
     with conn.cursor() as cur:
         try:
             today_date = datetime.datetime.now().strftime("%Y-%m-%d")
-            cur.execute("SELECT COUNT(*) FROM records2 WHERE vendor_code = %s AND date::date = %s", (vendor_code, today_date))
+            cur.execute("SELECT COUNT(*) FROM records WHERE vendor_code = %s AND date::date = %s", (vendor_code, today_date))
             result = cur.fetchone()
             return result[0] if result else 0
         except Exception as e:
@@ -98,7 +98,7 @@ def count_total_tasks_today(vendor_code):
 # Function to get the largest SN from the database
 def get_largest_sn():
     with conn.cursor() as cur:
-        cur.execute("SELECT MAX(sn) FROM records2")
+        cur.execute("SELECT MAX(sn) FROM records")
         result = cur.fetchone()
         return result[0] if result[0] is not None else 0
 
@@ -108,7 +108,7 @@ def write_to_db(data):
         # Assuming your table columns and data dict keys match
         columns = data.keys()
         values = [data[column] for column in columns]
-        insert_query = "INSERT INTO records2 ({}) VALUES ({})".format(
+        insert_query = "INSERT INTO records ({}) VALUES ({})".format(
             ', '.join(columns), ', '.join(['%s'] * len(values))
         )
         cur.execute(insert_query, values)
@@ -117,7 +117,7 @@ def write_to_db(data):
 # Function to update record status in the database
 def handle_serial_number(serial_number):
     with conn.cursor() as cur:
-        cur.execute("UPDATE records2 SET status = 'Y' WHERE serial_no = %s", (serial_number,))
+        cur.execute("UPDATE records SET status = 'Y' WHERE serial_no = %s", (serial_number,))
         conn.commit()
     return redirect(url_for('index'))
 
