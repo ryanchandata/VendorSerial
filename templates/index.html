@@ -44,8 +44,8 @@
     </form>
     <h1>Today's Records</h1>
     <h2>Unique Companies Today: {{ unique_companies_count }}</h2>
-    <h2>Total Skids Today: {{ total_skids_today }}</h2>
-    <h2>Plan to Finish Skids Today: {{total_non_finished_skids}}</h2>
+    <h2>Total Skids/items Today: {{ total_skids_today }}</h2>
+    <h2>Waiting to Finish Skids Today: {{total_non_finished_skids}}</h2>
     <button onclick="fetchAndDisplayRecords('/get_today_records')">Show Today's All Records</button>
     <button onclick="fetchAndDisplayRecords('/get_non_finished_skids')">Show Today's Non-Finished Skids</button>
     <button onclick="location.href='{{ url_for('print_labels') }}'">Print Today All Labels</button>

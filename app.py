@@ -122,19 +122,18 @@ def handle_serial_number(serial_number):
     return redirect(url_for('index'))
 
 
-# Function to get the next unique ID
 def get_next_unique_id(increment=1):
-    try:
-        with open('serial_counter.txt', 'r') as file:
-            current_id = int(file.read().strip())
-    except FileNotFoundError:
-        current_id = 0
+    with conn.cursor() as cur:
+        try:
+            cur.execute("SELECT MAX(SN) FROM records")
+            result = cur.fetchone()
+            max_sn = result[0] if result[0] is not None else 0
+            new_id = max_sn + increment
+            return new_id
+        except Exception as e:
+            print(f"Error occurred while getting the next unique ID: {e}")
+            return None
 
-    new_id = current_id + increment
-    with open('serial_counter.txt', 'w') as file:
-        file.write(str(new_id))
-
-    return new_id
 
 
 # Function to read data from vendor.csv
