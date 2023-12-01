@@ -20,22 +20,41 @@
                 handleEnterKeyPress(event, 'invoice_no');
             });
 
+            // Function to validate the Total Skids input
+            function validateTotalSkids() {
+                const totalSkids = document.getElementById('total_skids').value;
+                if (totalSkids > 30) {
+                    alert('Total Skids cannot be more than 30.');
+                    return false;
+                }
+                return true;
+            }
+
             // Monitor Enter keypress on Invoice Number and submit form if Enter is pressed
             document.getElementById('invoice_no').addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
                     event.preventDefault();
-                    document.getElementById('additionalDetailsForm').submit();
+                    if (validateTotalSkids()) {
+                        document.getElementById('additionalDetailsForm').submit();
+                    }
+                }
+            });
+
+            // Add form submission event listener
+            document.getElementById('additionalDetailsForm').addEventListener('submit', (event) => {
+                if (!validateTotalSkids()) {
+                    event.preventDefault();  // Prevent form submission if validation fails
                 }
             });
         });
     </script>
 </head>
 <body>
-    <h1>{{ vendor.vendor_Name }}</h1>
+    <h1>{{ vendor.vendor_name }}</h1>
     <form id="additionalDetailsForm" action="/input/{{ vendor.vendor_code }}" method="post">
         <h1>Vendor: {{ vendor.vendor_name }}</h1>
         <label for="total_skids">Total Skids:</label>
-        <input type="text" id="total_skids" name="total_skids" autofocus><br>
+        <input type="number" id="total_skids" name="total_skids" min="1" max="30"><br>
         
         <label for="invoice_no">Invoice Number:</label>
         <input type="text" id="invoice_no" name="invoice_no"><br>
