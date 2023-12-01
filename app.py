@@ -57,7 +57,7 @@ def read_today_records():
 def read_all_records():
     try:
         with conn.cursor(cursor_factory=DictCursor) as cur:
-            cur.execute("SELECT * FROM records")
+            cur.execute("SELECT * FROM records ORDER BY date DESC")
             return cur.fetchall()
     except Exception as e:
         print(f"An error occurred: {e}")
