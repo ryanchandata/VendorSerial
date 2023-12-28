@@ -49,6 +49,7 @@
     <button onclick="fetchAndDisplayRecords('/get_today_records')">Show Today's All Records</button>
     <button onclick="fetchAndDisplayRecords('/get_non_finished_skids')">Show Today's Non-Finished Skids</button>
     <button onclick="location.href='{{ url_for('print_labels') }}'">Print Today All Labels</button>
+    <button onclick="location.href='/export_today_records'">Export Todays Records</button>
     <button onclick="location.href='/all_records'">View All Records</button>
     <table border="1">
         <thead>

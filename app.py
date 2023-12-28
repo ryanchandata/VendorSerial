@@ -257,6 +257,28 @@ def export_records():
     output.headers["Content-type"] = "text/csv"
     return output
 
+@app.route('/export_today_records')
+def export_records():
+    records = read_today_records()  # Fetch the records from the database
+
+    # Create an in-memory text stream
+    si = io.StringIO()
+    cw = csv.writer(si)
+    
+    # Write CSV headers
+    cw.writerow(['SN', 'Vendor Code', 'Vendor Name', 'Date', 'Total Skids', 'Current Skid', 'Invoice No', 'Serial No', 'Status'])
+
+    # Write records to the CSV file
+    for record in records:
+        cw.writerow([record['sn'], record['vendor_code'], record['vendor_name'], record['date'], record['total_skids'], record['current_skid'], record['invoice_no'], record['serial_no'], record['status']])
+
+    # Set the output to return as a response
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=export_records.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
+
+
 @app.route('/input/<vendor_code>', methods=['GET', 'POST'])
 def additional_input(vendor_code):
     vendors = read_vendor_csv()
